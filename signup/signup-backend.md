@@ -146,8 +146,6 @@ module AuthServices
   class CipherService
     def self.encrypt(message:, key:, iv:) # rubocop:disable Naming/UncommunicativeMethodParamName
       cipher = new_cipher.tap(&:encrypt)
-      key = Base64.decode64 key
-      iv = Base64.decode64 iv
       cipher.key = Base64.decode64 key
       cipher.iv = Base64.decode64 iv
       encrypted = cipher.update(message) + cipher.final
