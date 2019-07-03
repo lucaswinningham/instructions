@@ -50,7 +50,15 @@ end
 
 ```
 
-###### backend/spec/models/user_spec.rb
+```bash
+$ mkdir spec/models/user/
+```
+
+```bash
+$ touch spec/models/user/user_validations_spec.rb
+```
+
+###### backend/spec/models/user/user_validations_spec.rb
 
 ```ruby
 RSpec.describe User, type: :model do
@@ -127,6 +135,158 @@ end
 ```
 
 ```bash
+$ mkdir app/models/concerns/user_concerns
+```
+
+```bash
+# $ touch app/models/concerns/user_concerns/user_{validations,callbacks,auth,activatable}.rb
+$ touch app/models/concerns/user_concerns/user_validations.rb
+```
+
+###### backend/app/models/concerns/user_concerns/user_validations.rb
+
+```ruby
+module UserConcerns
+  module UserValidations
+    extend ActiveSupport::Concern
+
+    VALID_NAME_REGEXP = /\A[A-Za-z0-9_\-]+\Z/.freeze
+    VALID_EMAIL_REGEXP = URI::MailTo::EMAIL_REGEXP
+
+    included do
+      validates(
+        :name,
+        presence: true,
+        allow_blank: false,
+        uniqueness: true,
+        length: { minimum: 3, maximum: 20 },
+        format: { with: VALID_NAME_REGEXP }
+      )
+
+      validates(
+        :email,
+        presence: true,
+        allow_blank: false,
+        uniqueness: true,
+        format: { with: VALID_EMAIL_REGEXP }
+      )
+    end
+  end
+end
+
+```
+
+###### backend/app/models/user.rb
+
+```ruby
+class User < ApplicationRecord
+  include UserConcerns::UserValidations
+end
+
+```
+
+```bash
+$ rspec
+$ rubocop
+```
+
+```bash
+$ touch spec/models/user/user_callbacks_spec.rb
+```
+
+###### backend/spec/models/user/user_callbacks_spec.rb
+
+```ruby
+RSpec.describe User, type: :model do
+
+end
+
+```
+
+###### backend/app/models/concerns/user_concerns/user_callbacks.rb
+
+```ruby
+module UserConcerns
+  module UserCallbacks
+    extend ActiveSupport::Concern
+
+    included do
+      after_create :send_activation_email
+    end
+
+    private
+
+    def send_activation_email; end
+  end
+end
+
+```
+
+###### backend/app/models/user.rb
+
+```ruby
+class User < ApplicationRecord
+  ...
+  include UserConcerns::UserCallbacks
+end
+
+```
+
+```bash
+$ rspec
+$ rubocop
+```
+
+```bash
+$ touch spec/models/user/user_activatable_spec.rb
+```
+
+###### backend/spec/models/user/user_activatable_spec.rb
+
+```ruby
+RSpec.describe User, type: :model do
+
+end
+
+```
+
+###### backend/app/models/concerns/user_concerns/user_activatable.rb
+
+```ruby
+module UserConcerns
+  module UserActivatable
+    extend ActiveSupport::Concern
+
+    included do
+      include Activatable
+
+      before_deactivate :deactivate_associations
+    end
+
+    private
+
+    def deactivate_associations; end
+  end
+end
+
+```
+
+###### backend/app/models/user.rb
+
+```ruby
+class User < ApplicationRecord
+  ...
+  include UserConcerns::UserActivatable
+end
+
+```
+
+```bash
+$ rspec
+$ rubocop
+```
+
+```bash
 $ mkdir -p spec/services/auth_services
 $ touch spec/services/auth_services/cipher_service_spec.rb
 $ mkdir -p app/services/auth_services
@@ -179,58 +339,19 @@ end
 ```
 
 ```bash
-$ mkdir app/models/concerns/user_concerns
-$ touch app/models/concerns/user_concerns/user_{validations,callbacks,auth,activatable}.rb
+$ rspec
+$ rubocop
 ```
 
-###### backend/app/models/concerns/user_concerns/user_validations.rb
-
-```ruby
-module UserConcerns
-  module UserValidations
-    extend ActiveSupport::Concern
-
-    VALID_NAME_REGEXP = /\A[A-Za-z0-9_\-]+\Z/.freeze
-    VALID_EMAIL_REGEXP = URI::MailTo::EMAIL_REGEXP
-
-    included do
-      validates(
-        :name,
-        presence: true,
-        allow_blank: false,
-        uniqueness: true,
-        length: { minimum: 3, maximum: 20 },
-        format: { with: VALID_NAME_REGEXP }
-      )
-
-      validates(
-        :email,
-        presence: true,
-        allow_blank: false,
-        uniqueness: true,
-        format: { with: VALID_EMAIL_REGEXP }
-      )
-    end
-  end
-end
-
+```bash
+$ touch spec/models/user/user_auth_spec.rb
 ```
 
-###### backend/app/models/concerns/user_concerns/user_callbacks.rb
+###### backend/spec/models/user/user_auth_spec.rb
 
 ```ruby
-module UserConcerns
-  module UserCallbacks
-    extend ActiveSupport::Concern
+RSpec.describe User, type: :model do
 
-    included do
-      after_create :send_activation_email
-    end
-
-    private
-
-    def send_activation_email; end
-  end
 end
 
 ```
@@ -286,34 +407,11 @@ end
 
 ```
 
-###### backend/app/models/concerns/user_concerns/user_activatable.rb
-
-```ruby
-module UserConcerns
-  module UserActivatable
-    extend ActiveSupport::Concern
-
-    included do
-      include Activatable
-
-      before_deactivate :deactivate_associations
-    end
-
-    private
-
-    def deactivate_associations; end
-  end
-end
-
-```
-
 ###### backend/app/models/user.rb
 
 ```ruby
 class User < ApplicationRecord
-  include UserConcerns::UserValidations
-  include UserConcerns::UserCallbacks
-  include UserConcerns::UserActivatable
+  ...
   include UserConcerns::UserAuth
 end
 
@@ -323,6 +421,8 @@ end
 $ rspec
 $ rubocop
 ```
+
+### GraphQL SignupUser
 
 ```bash
 $ mkdir -p spec/graphql/mutations/users/
