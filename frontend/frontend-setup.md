@@ -7,36 +7,6 @@ $ ng serve # ^C to stop
 
 [Navigate to frontend](http://localhost:4200/)
 
-add logging interceptor, https://angular.io/guide/http#logging
-
-###### frontend/src/environments/environment.ts
-
-```ts
-export const environment = {
-  ...,
-  apiUrl: 'http://localhost:3000'
-};
-
-```
-
-###### frontend/tsconfig.json
-
-```json
-{
-  ...,
-  "compilerOptions": {
-    "baseUrl": "src",
-    ...,
-
-    "paths": {
-      "@env/*": [ "environments/*" ],
-      "@app/*": [ "app/*" ]
-    }
-  }
-}
-
-```
-
 ## Style Setup
 
 ```bash
@@ -257,6 +227,267 @@ body {
 @import '~assets/styles/fonts';
 
 ```
+
+## Api Setup
+
+```bash
+$ ng add apollo-angular
+```
+
+<!-- add logging interceptor, https://angular.io/guide/http#logging -->
+
+###### frontend/src/environments/environment.ts
+
+```ts
+export const environment = {
+  ...,
+  apiUrl: 'http://localhost:3000/graphql'
+};
+
+```
+
+###### frontend/tsconfig.json
+
+```json
+{
+  ...,
+  "compilerOptions": {
+    "baseUrl": "src",
+    ...,
+
+    "paths": {
+      "@env/*": [ "environments/*" ],
+      "@app/*": [ "app/*" ]
+    }
+  }
+}
+
+```
+
+###### frontend/src/app/graphql.module.ts
+
+```ts
+...
+
+import { environment } from '@env/environment';
+const { apiUrl } = environment;
+const uri = apiUrl; // <-- add the URL of the GraphQL server here
+...
+
+```
+
+```bash
+$ npm install \
+  apollo-angular \
+  apollo-angular-link-http \
+  apollo-link \
+  apollo-client \
+  apollo-cache-inmemory \
+  graphql-tag \
+  graphql \
+  --save
+```
+
+###### frontend/src/app/graphql.module.ts
+
+```ts
+...
+
+import { ApolloModule, APOLLO_OPTIONS } from 'apollo-angular';
+import { HttpLinkModule, HttpLink } from 'apollo-angular-link-http';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+
+import { environment } from '@env/environment';
+const { apiUrl } = environment;
+
+@NgModule({
+  ...,
+  providers: [{
+    provide: APOLLO_OPTIONS,
+    useFactory: (httpLink: HttpLink) => {
+      return {
+        cache: new InMemoryCache(),
+        link: httpLink.create({
+          uri: apiUrl
+        })
+      }
+    },
+    deps: [HttpLink]
+  }],
+  ...
+})
+export class AppModule { }
+
+```
+
+###### frontend/src/app/app.module.ts
+
+```ts
+...
+
+import { ApolloModule, APOLLO_OPTIONS } from 'apollo-angular';
+import { HttpLinkModule, HttpLink } from 'apollo-angular-link-http';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+
+import { environment } from '@env/environment';
+const { apiUrl } = environment;
+
+...
+
+@NgModule({
+  ...,
+  providers: [{
+    ...
+    useFactory: ... => {
+      return {
+        ...,
+        link: httpLink.create({
+          uri: apiUrl
+        })
+      };
+    },
+    ...
+  }],
+  ....
+})
+export class AppModule { }
+
+...
+```
+
+```bash
+$ ng g s services/utils/api/data-transform
+$ ng g s services/utils/api
+```
+
+###### frontend/tsconfig.json
+
+```json
+{
+  ...,
+  "compilerOptions": {
+    ...,
+
+    "paths": {
+      ...,
+      "@services/*": [ "app/services/*" ]
+    }
+  }
+}
+
+```
+
+###### frontend/src/app/services/utils/api.service.spec.ts
+
+```ts
+
+```
+
+###### frontend/src/app/services/utils/api.service.ts
+
+```ts
+...
+import { Apollo } from 'apollo-angular';
+import gql from 'graphql-tag';
+
+...
+export class ApiService {
+}
+
+```
+
+## Model Setup
+
+<!-- ```bash
+$ ng g class models/base --type=model
+```
+
+###### frontend/src/app/models/base.model.ts
+
+```ts
+
+``` -->
+
+###### frontend/tsconfig.json
+
+```json
+{
+  ...,
+  "compilerOptions": {
+    ...,
+
+    "paths": {
+      ...,
+      "@models/*": [ "app/models/*" ]
+    }
+  }
+}
+
+```
+
+## Component Setup
+
+```bash
+$ ng g m pages --module=app
+```
+
+###### frontend/tsconfig.json
+
+```json
+{
+  ...,
+  "compilerOptions": {
+    ...,
+
+    "baseUrl": "src",
+    "paths": {
+      ...,
+      "@pages/*": [ "app/pages/*" ]
+    }
+  }
+}
+
+```
+
+###### frontend/src/app/app.component.html
+
+```html
+<h1>SPRINGBOARD</h1>
+
+<router-outlet></router-outlet>
+
+```
+
+###### frontend/src/app/app.component.spec.ts
+
+```ts
+...
+
+describe('AppComponent', () => {
+  ...
+
+  it('should render title in a h1 tag', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const compiled = fixture.debugElement.nativeElement;
+    expect(compiled.querySelector('h1').textContent).toContain('SPRINGBOARD');
+  });
+});
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## View Setup
 

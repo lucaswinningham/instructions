@@ -6,6 +6,8 @@ graph api - apprehensive about this, not the rails way / actual benefits?
   would no doubt change curl instructions
   would no doubt change api service and all other services
 
+see if cipher service actually needs base 64 encoding / decoding
+
 controller before actions without erroring see activations controller
 
 make cipher key and iv user specific

@@ -21,11 +21,15 @@ end
 # Use BCrypt for hashing
 gem 'bcrypt'
 
+# Use RabbitMQ and Bunny for background processing
+gem 'bunny'
+
+...
+
 # Use JWT for auth
 gem 'jwt'
 
-# Use RabbitMQ and Bunny for background processing
-gem 'bunny'
+...
 
 ```
 
@@ -34,7 +38,11 @@ $ bundle
 ```
 
 ```bash
-$ rails g model user name:string:uniq email:string:uniq active:boolean activated_at:datetime deactivated_at:datetime password_digest:string salt:string nonce:string civ:string ckey:string auth_expires_at:datetime
+$ rails g model user name:string:uniq email:string:uniq
+$ rails g migration add_activation_to_users active:boolean activated_at:datetime deactivated_at:datetime
+$ rails g migration add_confirmation_to_users confirmation_digest:string
+$ rails g migration add_auth_to_users nonce:string civ:string ckey:string auth_expires_at:datetime
+$ rails g migration add_password_to_users password_digest:string salt:string
 $ rails db:migrate
 ```
 
@@ -51,128 +59,24 @@ end
 ```
 
 ```bash
-$ mkdir spec/models/user/
-```
-
-```bash
-$ touch spec/models/user/user_validations_spec.rb
-```
-
-###### backend/spec/models/user/user_validations_spec.rb
-
-```ruby
-RSpec.describe User, type: :model do
-  blank_values = ['', ' ', "\n", "\r", "\t", "\f"]
-
-  describe 'name' do
-    it { should validate_presence_of(:name) }
-    it { should_not allow_values(*blank_values).for(:name) }
-    it { should validate_uniqueness_of(:name) }
-    it { should validate_length_of(:name).is_at_least(3).is_at_most(20) }
-
-    it do
-      should_not allow_values(
-        'username!',
-        'username?',
-        'username*',
-        'username#',
-        'user name'
-      ).for(:name)
-    end
-
-    it do
-      should allow_values(
-        'username',
-        'user-name',
-        'user_name',
-        'user1name',
-        '_username_',
-        '-username-',
-        '1username1',
-        'USERNAME'
-      ).for(:name)
-    end
-  end
-
-  describe 'email' do
-    it { should validate_presence_of(:email) }
-    it { should_not allow_values(*blank_values).for(:email) }
-    it { should validate_uniqueness_of(:email) }
-
-    it do
-      should_not allow_values(
-        'plainaddress',
-        '#@%^%#$@#$@#.com',
-        '@domain.com',
-        'Joe Smith <email@domain.com>',
-        'email.domain.com',
-        'email@domain@domain.com',
-        'あいうえお@domain.com',
-        'email@domain.com (Joe Smith)',
-        'email@-domain.com',
-        'email@domain..com'
-      ).for(:email)
-    end
-
-    it do
-      should allow_values(
-        'email@domain.com',
-        'firstname.lastname@domain.com',
-        'email@subdomain.domain.com',
-        'firstname+lastname@domain.com',
-        'email@123.123.123.123',
-        '1234567890@domain.com',
-        'email@domain-one.com',
-        '_______@domain.com',
-        'email@domain.name',
-        'email@domain.co.jp',
-        'firstname-lastname@domain.com'
-      ).for(:email)
-    end
-  end
-end
-
-```
-
-```bash
+$ mkdir -p spec/models/concerns/user_concerns/
 $ mkdir app/models/concerns/user_concerns
 ```
 
 ```bash
-# $ touch app/models/concerns/user_concerns/user_{validations,callbacks,auth,activatable}.rb
-$ touch app/models/concerns/user_concerns/user_validations.rb
+$ touch spec/models/concerns/user_concerns/user_identifiable_spec.rb
+$ touch app/models/concerns/user_concerns/user_identifiable.rb
 ```
 
-###### backend/app/models/concerns/user_concerns/user_validations.rb
+###### backend/spec/models/concerns/user_concerns/user_identifiable_spec.rb
 
 ```ruby
-module UserConcerns
-  module UserValidations
-    extend ActiveSupport::Concern
 
-    VALID_NAME_REGEXP = /\A[A-Za-z0-9_\-]+\Z/.freeze
-    VALID_EMAIL_REGEXP = URI::MailTo::EMAIL_REGEXP
+```
 
-    included do
-      validates(
-        :name,
-        presence: true,
-        allow_blank: false,
-        uniqueness: true,
-        length: { minimum: 3, maximum: 20 },
-        format: { with: VALID_NAME_REGEXP }
-      )
+###### backend/app/models/concerns/user_concerns/user_identifiable.rb
 
-      validates(
-        :email,
-        presence: true,
-        allow_blank: false,
-        uniqueness: true,
-        format: { with: VALID_EMAIL_REGEXP }
-      )
-    end
-  end
-end
+```ruby
 
 ```
 
@@ -180,45 +84,92 @@ end
 
 ```ruby
 class User < ApplicationRecord
-  include UserConcerns::UserValidations
+  include UserConcerns::UserIdentifiable
 end
 
 ```
 
 ```bash
 $ rspec
-$ rubocop
 ```
 
 ```bash
-$ touch spec/models/user/user_callbacks_spec.rb
+$ mkdir spec/jobs
+$ rm app/jobs/application_job.rb
 ```
 
-###### backend/spec/models/user/user_callbacks_spec.rb
+```bash
+$ touch app/jobs/job.rb
+$ touch spec/jobs/job_spec.rb
+```
+
+<!-- this is just testing implementation, any better way to test? -->
+
+###### backend/spec/jobs/job_spec.rb
 
 ```ruby
-RSpec.describe User, type: :model do
-
-end
 
 ```
 
-###### backend/app/models/concerns/user_concerns/user_callbacks.rb
+###### backend/app/jobs/job.rb
 
 ```ruby
-module UserConcerns
-  module UserCallbacks
-    extend ActiveSupport::Concern
 
-    included do
-      after_create :send_activation_email
-    end
+```
 
-    private
+```bash
+$ rspec
+```
 
-    def send_activation_email; end
-  end
-end
+```bash
+$ mkdir -p spec/jobs/mailers/user_mailers
+$ mkdir -p app/jobs/mailers/user_mailers
+```
+
+```bash
+$ touch spec/jobs/mailers/user_mailers/confirmation_mailer_spec.rb
+$ touch app/jobs/mailers/user_mailers/confirmation_mailer.rb
+```
+
+###### backend/spec/jobs/mailers/user_mailers/confirmation_mailer_spec.rb
+
+```ruby
+
+```
+
+###### backend/app/jobs/mailers/user_mailers/confirmation_mailer.rb
+
+```ruby
+
+```
+
+###### backend/.env
+
+```
+...
+
+CLIENT_URL=http://localhost:4200
+
+```
+
+```bash
+$ rspec
+```
+
+```bash
+$ touch spec/models/concerns/user_concerns/user_confirmable_spec.rb
+$ touch app/models/concerns/user_concerns/user_confirmable.rb
+```
+
+###### backend/spec/models/concerns/user_concerns/user_confirmable_spec.rb
+
+```ruby
+
+```
+
+###### backend/app/models/concerns/user_concerns/user_confirmable.rb
+
+```ruby
 
 ```
 
@@ -227,47 +178,29 @@ end
 ```ruby
 class User < ApplicationRecord
   ...
-  include UserConcerns::UserCallbacks
+  include UserConcerns::UserConfirmable
 end
 
 ```
 
 ```bash
 $ rspec
-$ rubocop
 ```
 
 ```bash
-$ touch spec/models/user/user_activatable_spec.rb
+$ touch spec/models/concerns/user_concerns/user_activatable_spec.rb
+$ touch app/models/concerns/user_concerns/user_activatable.rb
 ```
 
-###### backend/spec/models/user/user_activatable_spec.rb
+###### backend/spec/models/concerns/user_concerns/user_activatable_spec.rb
 
 ```ruby
-RSpec.describe User, type: :model do
-
-end
 
 ```
 
 ###### backend/app/models/concerns/user_concerns/user_activatable.rb
 
 ```ruby
-module UserConcerns
-  module UserActivatable
-    extend ActiveSupport::Concern
-
-    included do
-      include Activatable
-
-      before_deactivate :deactivate_associations
-    end
-
-    private
-
-    def deactivate_associations; end
-  end
-end
 
 ```
 
@@ -283,13 +216,15 @@ end
 
 ```bash
 $ rspec
-$ rubocop
 ```
 
 ```bash
 $ mkdir -p spec/services/auth_services
-$ touch spec/services/auth_services/cipher_service_spec.rb
 $ mkdir -p app/services/auth_services
+```
+
+```bash
+$ touch spec/services/auth_services/cipher_service_spec.rb
 $ touch app/services/auth_services/cipher_service.rb
 ```
 
@@ -302,57 +237,21 @@ $ touch app/services/auth_services/cipher_service.rb
 ###### backend/app/services/auth_services/cipher_service.rb
 
 ```ruby
-module AuthServices
-  class CipherService
-    def self.encrypt(message:, key:, iv:) # rubocop:disable Naming/UncommunicativeMethodParamName
-      cipher = new_cipher.tap(&:encrypt)
-      cipher.key = Base64.decode64 key
-      cipher.iv = Base64.decode64 iv
-      encrypted = cipher.update(message) + cipher.final
-      encrypted_and_encoded = Base64.encode64 encrypted
-      encrypted_and_encoded
-    end
-
-    def self.decrypt(message:, key:, iv:) # rubocop:disable Naming/UncommunicativeMethodParamName
-      decoded = Base64.decode64 message
-      cipher = new_cipher.tap(&:decrypt)
-      cipher.key = Base64.decode64 key
-      cipher.iv = Base64.decode64 iv
-      decoded_and_decrypted = cipher.update(decoded) + cipher.final
-      decoded_and_decrypted
-    end
-
-    def self.random_key
-      Base64.encode64 new_cipher.tap(&:encrypt).random_key
-    end
-
-    def self.random_iv
-      Base64.encode64 new_cipher.tap(&:encrypt).random_iv
-    end
-
-    def self.new_cipher
-      OpenSSL::Cipher::AES128.new(:CBC)
-    end
-  end
-end
 
 ```
 
 ```bash
 $ rspec
-$ rubocop
 ```
 
 ```bash
-$ touch spec/models/user/user_auth_spec.rb
+$ touch spec/models/concerns/user_concerns/user_auth_spec.rb
+$ touch app/models/concerns/user_concerns/user_auth.rb
 ```
 
-###### backend/spec/models/user/user_auth_spec.rb
+###### backend/spec/models/concerns/user_concerns/user_auth_spec.rb
 
 ```ruby
-RSpec.describe User, type: :model do
-
-end
 
 ```
 
@@ -419,7 +318,37 @@ end
 
 ```bash
 $ rspec
-$ rubocop
+```
+
+```bash
+$ touch spec/models/concerns/user_concerns/user_password_spec.rb
+$ touch app/models/concerns/user_concerns/user_password.rb
+```
+
+###### backend/spec/models/concerns/user_concerns/user_password_spec.rb
+
+```ruby
+
+```
+
+###### backend/app/models/concerns/user_concerns/user_password.rb
+
+```ruby
+
+```
+
+###### backend/app/models/user.rb
+
+```ruby
+class User < ApplicationRecord
+  ...
+  include UserConcerns::UserPassword
+end
+
+```
+
+```bash
+$ rspec
 ```
 
 ### GraphQL SignupUser

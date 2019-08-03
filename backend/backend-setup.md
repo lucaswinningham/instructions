@@ -18,12 +18,12 @@ gem 'rack-cors'
 ...
 
 group :development, :test do
-  # Use awesome print for debugging readability
-  gem 'awesome_print'
-
   # Use rubocop for static code analyzation
   gem 'rubocop-rails'
 end
+
+# Use awesome print for debugging readability
+gem 'awesome_print'
 
 # Use dotenv for environment variables
 gem 'dotenv-rails'
@@ -179,13 +179,13 @@ module Activatable
 
   def activate
     run_callbacks :activate do
-      update activated_at: Time.now, active: true
+      update activated_at: Time.now.utc, active: true
     end
   end
 
   def deactivate
     run_callbacks :deactivate do
-      update deactivated_at: Time.now, active: false
+      update deactivated_at: Time.now.utc, active: false
     end
   end
 end
@@ -291,9 +291,6 @@ group :development, :test do
 end
 
 ...
-
-# Use Netflix's serializers
-gem 'fast_jsonapi'
 
 ```
 
@@ -429,17 +426,7 @@ module Helpers
     #   response_body.data
     # end
 
-    def body
-      @body ||= JSON.parse(response.body, object_class: OpenStruct)
-    end
-
-    def data
-      @data ||= body.data
-    end
-
-    def errors
-      @errors ||= body.errors
-    end
+    # fill in with actual code here
   end
 end
 
@@ -491,6 +478,48 @@ Metrics/BlockLength:
 ```bash
 $ rubocop -a
 $ rubocop
+```
+
+```bash
+$ mkdir spec/lint
+$ touch spec/lint/rubocop_spec.rb
+```
+
+###### backend/spec/lint/rubocop_spec.rb
+
+```ruby
+RSpec.describe 'rubocop analysis' do
+  subject(:report) { `rubocop` }
+
+  it 'has no offenses' do
+    expect(report).to match(/no offenses detected/)
+  end
+end
+
+```
+
+###### backend/Guardfile
+
+```ruby
+...
+
+guard :rspec, cmd: "bundle exec rspec" do
+  ...
+
+  watch(/.*/) { 'spec/lint/rubocop_spec.rb' }
+
+  # watch(%r{^app/models/concerns/(.+)_concerns/(.+)\.rb$}) do |m|
+  #   "spec/models/#{m[1]}/#{m[2]}_spec.rb"
+  # end
+end
+
+```
+
+```bash
+$ rspec
+```
+
+```bash
 $ mkdir spec/shared
 $ mkdir spec/shared/concerns
 $ touch spec/shared/concerns/a_tokenable.rb
@@ -602,6 +631,8 @@ group :development do
   gem 'graphiql-rails'
 end
 
+...
+
 # Use GraphQL for api data
 gem 'graphql'
 
@@ -613,6 +644,34 @@ $ rails g graphql:install --api
 $ rubocop -a
 $ rubocop
 ```
+
+###### backend/config/routes.rb
+
+```ruby
+Rails.application.routes.draw do
+  if Rails.env.development?
+    mount GraphiQL::Rails::Engine, at: '/graphiql', graphql_path: 'graphql#execute'
+  end
+
+  ...
+end
+
+```
+
+###### backend/config/application.rb
+
+```ruby
+...
+require 'sprockets/railtie'
+...
+
+```
+
+```bash
+$ rails s # ^C to stop
+```
+
+[Navigate to graphiql](http://localhost:3000/graphiql)
 
 ###### backend/app/graphql/types/query_type.rb
 
@@ -665,6 +724,6 @@ end
 ```
 
 ```bash
-$ rubocop
+$ rspec
 ```
 
