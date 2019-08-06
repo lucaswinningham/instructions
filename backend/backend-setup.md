@@ -57,6 +57,8 @@ $ touch .rubocop.yml
 ###### backend/.rubocop.yml
 
 ```yaml
+require: rubocop-rails
+
 AllCops:
   Exclude:
     - 'bin/*'

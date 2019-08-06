@@ -351,22 +351,18 @@ end
 $ rspec
 ```
 
-### GraphQL SignupUser
+### GraphQL User Signup
 
 ```bash
-$ mkdir -p spec/graphql/mutations/users/
-$ touch spec/graphql/mutations/users/user_signup_spec.rb
 $ mkdir app/graphql/types/auth/
 $ touch app/graphql/types/auth/user_auth_type.rb
 $ touch app/graphql/mutations/base_mutation.rb
+$ mkdir -p spec/graphql/mutations/users/
+$ touch spec/graphql/mutations/users/user_create_spec.rb
+$ touch spec/graphql/mutations/users/user_password_change_spec.rb
 $ mkdir app/graphql/mutations/users/
-$ touch app/graphql/mutations/users/user_signup.rb
-```
-
-###### backend/spec/graphql/mutations/users/user_signup_spec.rb
-
-```ruby
-
+$ touch app/graphql/mutations/users/user_create.rb
+$ touch app/graphql/mutations/users/user_password_change.rb
 ```
 
 ###### backend/app/graphql/types/auth/user_auth_type.rb
@@ -391,7 +387,13 @@ end
 
 ```
 
-###### backend/app/graphql/mutations/users/user_signup.rb
+###### backend/spec/graphql/mutations/users/user_create_spec.rb
+
+```ruby
+
+```
+
+###### backend/app/graphql/mutations/users/user_create.rb
 
 ```ruby
 
@@ -402,7 +404,30 @@ end
 ```ruby
 module Types
   class MutationType < Types::BaseObject
-    field :user_signup, mutation: Mutations::Users::UserSignup
+    field :user_create, mutation: Mutations::Users::UserCreate
+  end
+end
+
+```
+
+###### backend/spec/graphql/mutations/users/user_password_change_spec.rb
+
+```ruby
+
+```
+
+###### backend/app/graphql/mutations/users/user_password_change.rb
+
+```ruby
+
+```
+
+###### backend/app/graphql/types/mutation_type.rb
+
+```ruby
+module Types
+  class MutationType < Types::BaseObject
+    field :user_password_change, mutation: Mutations::Users::UserPasswordChange
   end
 end
 
