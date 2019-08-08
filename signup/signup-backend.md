@@ -41,7 +41,7 @@ $ bundle
 $ rails g model user name:string:uniq email:string:uniq
 $ rails g migration add_activation_to_users active:boolean activated_at:datetime deactivated_at:datetime
 $ rails g migration add_confirmation_to_users confirmation_digest:string
-$ rails g migration add_auth_to_users nonce:string civ:string ckey:string auth_expires_at:datetime
+$ rails g migration add_auth_to_users nonce:string civ:string ckey:string auth_expires_at:datetime jwt_key:string
 $ rails g migration add_password_to_users password_digest:string salt:string
 $ rails db:migrate
 ```
@@ -245,6 +245,27 @@ $ rspec
 ```
 
 ```bash
+$ touch spec/services/auth_services/jwt_service_spec.rb
+$ touch app/services/auth_services/jwt_service.rb
+```
+
+###### backend/spec/services/auth_services/jwt_service_spec.rb
+
+```ruby
+
+```
+
+###### backend/app/services/auth_services/jwt_service.rb
+
+```ruby
+
+```
+
+```bash
+$ rspec
+```
+
+```bash
 $ touch spec/models/concerns/user_concerns/user_auth_spec.rb
 $ touch app/models/concerns/user_concerns/user_auth.rb
 ```
@@ -356,9 +377,12 @@ $ rspec
 ```bash
 $ mkdir app/graphql/types/auth/
 $ touch app/graphql/types/auth/user_auth_type.rb
+$ touch app/graphql/types/auth/user_token_type.rb
 $ touch app/graphql/mutations/base_mutation.rb
 $ mkdir -p spec/graphql/mutations/users/
 $ touch spec/graphql/mutations/users/user_create_spec.rb
+$ mkdir spec/support/client_mocks
+$ touch spec/support/client_mocks/user_password_mock.rb
 $ touch spec/graphql/mutations/users/user_password_change_spec.rb
 $ mkdir app/graphql/mutations/users/
 $ touch app/graphql/mutations/users/user_create.rb
@@ -375,6 +399,19 @@ module Types
       field :nonce, String, null: false
       field :ckey, String, null: false
       field :civ, String, null: false
+    end
+  end
+end
+
+```
+
+###### backend/app/graphql/types/auth/user_token_type.rb
+
+```ruby
+module Types
+  module Auth
+    class UserTokenType < BaseObject
+      field :token, String, null: false
     end
   end
 end
@@ -410,6 +447,16 @@ end
 
 ```
 
+```bash
+$ rspec
+```
+
+###### backend/spec/support/client_mocks/user_password_mock.rb
+
+```ruby
+
+```
+
 ###### backend/spec/graphql/mutations/users/user_password_change_spec.rb
 
 ```ruby
@@ -427,10 +474,15 @@ end
 ```ruby
 module Types
   class MutationType < Types::BaseObject
+    ...
     field :user_password_change, mutation: Mutations::Users::UserPasswordChange
   end
 end
 
+```
+
+```bash
+$ rspec
 ```
 
 

@@ -62,6 +62,7 @@ require: rubocop-rails
 AllCops:
   Exclude:
     - 'bin/*'
+    - 'config/environments/*'
     - 'config/initializers/backtrace_silencers.rb'
     - 'db/schema.rb'
     - 'db/migrate/*'
@@ -217,7 +218,7 @@ module Tokenable
   end
 
   def unique_token?
-    token && self.class.find_by_token(token).nil?
+    token && self.class.find_by(token: token).nil?
   end
 end
 
@@ -439,7 +440,7 @@ end
 ```ruby
 ...
 
-Dir[Rails.root.join('spec/support/**/*.rb')].each { |f| require f }
+Dir[Rails.root.join('spec', 'support', '**', '*.rb')].each { |f| require f }
 
 RSpec.configure do |config|
   ...
