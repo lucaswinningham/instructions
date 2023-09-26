@@ -15,37 +15,112 @@ $ npm install \
 ```
 
 ```bash
-$ ng g class models/user/user-auth --type=model
-$ ng g class models/user/user-signup --type=model
+$ ng g class models/jwt --type=model
+$ ng g class models/user --type=model
 ```
 
-###### frontend/src/app/models/user/user-auth.model.ts
+###### frontend/src/app/models/jwt.model.ts
 
 ```ts
 
 ```
 
-###### frontend/src/app/models/user/user-signup.model.ts
+###### frontend/src/app/models/user.model.ts
 
 ```ts
 
 ```
 
 ```bash
-$ ng g s services/queries/user-signup
+$ ng g class spec/users/user-trait-generator
+$ ng g s services/queries/users/user-create
+$ ng g s services/queries/users/user-password-change
+$ ng g s services/auth/users/cipher
+$ ng g s services/auth/users/hash
+$ ng g s services/auth/users/nonce
+# $ ng g s services/queries/users/user-signup
 ```
 
-###### frontend/src/app/services/queries/user-signup.service.spec.ts
+###### frontend/src/app/spec/users/user-trait-generator.ts
 
 ```ts
 
 ```
 
-###### frontend/src/app/services/queries/user-signup.service.ts
+###### frontend/src/app/services/queries/users/user-create.service.spec.ts
 
 ```ts
 
 ```
+
+###### frontend/src/app/services/queries/users/user-create.service.ts
+
+```ts
+
+```
+
+###### frontend/src/app/services/auth/users/cipher.service.spec.ts
+
+###### frontend/src/app/services/auth/users/cipher.service.ts
+
+```ts
+...
+
+...
+export class CipherService {
+}
+
+```
+
+###### frontend/src/app/services/auth/users/hash.service.spec.ts
+
+###### frontend/src/app/services/auth/users/hash.service.ts
+
+```ts
+...
+
+...
+export class HashService {
+}
+
+```
+
+###### frontend/src/app/services/auth/users/nonce.service.spec.ts
+
+###### frontend/src/app/services/auth/users/nonce.service.ts
+
+```ts
+...
+
+...
+export class NonceService {
+}
+
+```
+
+###### frontend/src/app/services/queries/users/user-password-change.service.spec.ts
+
+```ts
+
+```
+
+###### frontend/src/app/services/queries/users/user-password-change.service.ts
+
+```ts
+
+```
+
+<!-- ###### frontend/src/app/services/queries/users/user-signup.service.spec.ts
+
+```ts
+
+```
+
+###### frontend/src/app/services/queries/users/user-signup.service.ts
+
+```ts
+
+``` -->
 
 ```bash
 $ ng g m pages/signup --module=pages

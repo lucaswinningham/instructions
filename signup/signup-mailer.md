@@ -65,6 +65,32 @@ gem 'mail'
 
 ```bash
 $ bundle
+$ bundle exec guard init rspec
+```
+
+```bash
+$ touch .rubocop.yml
+```
+
+###### backend/.rubocop.yml
+
+```yaml
+AllCops:
+  Exclude:
+    - 'bin/*'
+    - 'config/environments/*'
+    - 'config/initializers/backtrace_silencers.rb'
+    - 'db/schema.rb'
+    - 'db/migrate/*'
+Metrics/LineLength:
+  Max: 100
+Metrics/MethodLength:
+  Max: 15
+Style/FrozenStringLiteralComment:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+
 ```
 
 ```bash
@@ -77,8 +103,7 @@ $ touch config/setup.rb
 ```ruby
 require 'bundler/setup'
 
-$ROOT_PATH = File.expand_path '../../lib', __FILE__
-$LOAD_PATH.unshift $ROOT_PATH
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 ```
 

@@ -164,6 +164,8 @@ $ rails db:create
 <!-- think about making a not deleteable concern as well -->
 <!-- https://www.tigraine.at/2012/02/03/removing-delete-and-destroy-in-rails-models -->
 
+<!-- make into gem -->
+
 ```bash
 $ touch app/models/concerns/activatable.rb
 ```
@@ -197,6 +199,8 @@ end
 
 <!-- token service? -->
 
+<!-- make into gem -->
+
 ```bash
 $ touch app/models/concerns/tokenable.rb
 ```
@@ -224,7 +228,7 @@ end
 
 ```
 
-## Model Setup
+## Controller Setup
 
 <!-- for guarding against AbstractController::DoubleRenderError -->
 
@@ -343,10 +347,10 @@ end
 
 ```
 
+<!-- 
 ```bash
 $ mkdir spec/support
 ```
-<!-- 
 ```bash
 $ touch spec/support/validatable.rb
 ``` -->
@@ -409,27 +413,35 @@ $ touch spec/support/respondable.rb
 
 <!-- maybe move the response_body out of here and to a different helper module so it's single responsibility -->
 <!-- call it response_data too unless you can think of a reason to also keep response_body -->
+<!-- this also probably belongs somewhere else than this file -->
 
-###### backend/spec/support/respondable.rb
+```bash
+$ mkdir -p spec/support/graphql
+$ touch spec/support/graphql/respondable.rb
+```
+
+###### backend/spec/support/graphql/respondable.rb
 
 ```ruby
-module Helpers
-  module Respondable
-    # def expect_response(status, content_type: 'application/json')
-    #   yield
-    #   expect(response).to have_http_status(status)
-    #   expect(response.content_type).to eq(content_type)
-    # end
+module Support
+  module GraphQL
+    module Respondable
+      # def expect_response(status, content_type: 'application/json')
+      #   yield
+      #   expect(response).to have_http_status(status)
+      #   expect(response.content_type).to eq(content_type)
+      # end
 
-    # def response_body
-    #   JSON.parse(response.body, object_class: OpenStruct)
-    # end
+      # def response_body
+      #   JSON.parse(response.body, object_class: OpenStruct)
+      # end
 
-    # def response_data
-    #   response_body.data
-    # end
+      # def response_data
+      #   response_body.data
+      # end
 
-    # fill in with actual code here
+      # fill in with actual code here
+    end
   end
 end
 
@@ -440,7 +452,7 @@ end
 ```ruby
 ...
 
-Dir[Rails.root.join('spec', 'support', '**', '*.rb')].each { |f| require f }
+# Dir[Rails.root.join('spec', 'support', '**', '*.rb')].each { |f| require f }
 
 RSpec.configure do |config|
   ...
@@ -449,7 +461,7 @@ RSpec.configure do |config|
 
   # config.include Helpers::Validatable, type: :model
 
-  config.include Helpers::Respondable, type: :request
+  # config.include Helpers::Respondable, type: :request
 end
 
 ...
@@ -473,7 +485,10 @@ AllCops:
     ...
 Metrics/BlockLength:
   Exclude:
-    - 'spec/**/*_spec.rb'
+    - 'spec/**/*.rb'
+Metrics/ModuleLength:
+  Exclude:
+    - 'spec/**/*.rb'
 ...
 
 ```
@@ -521,6 +536,8 @@ end
 ```bash
 $ rspec
 ```
+
+<!-- again make these part of respective gems -->
 
 ```bash
 $ mkdir spec/shared
@@ -571,7 +588,7 @@ end
 $ rubocop
 ```
 
-### Paper Trail
+## Paper Trail
 
 ###### backend/Gemfile
 
@@ -620,9 +637,7 @@ end
 
 ```
 
-### GraphQL
-
-### Paper Trail
+## GraphQL
 
 ###### backend/Gemfile
 
@@ -728,5 +743,40 @@ end
 
 ```bash
 $ rspec
+```
+
+## Logging Setup
+
+```bash
+$ mkdir lib/logging
+$ touch lib/logging/{logger,formatter}.rb
+```
+
+###### backend/logging/logger.rb
+
+```ruby
+
+```
+
+###### backend/logging/formatter.rb
+
+```ruby
+
+```
+
+###### backend/config/application.rb
+
+```ruby
+...
+
+module Api
+  class Application < Rails::Application
+    ...
+
+    require 'logging/logger'
+    config.logger = ActiveSupport::TaggedLogging.new Logging::Logger.new(STDOUT)
+  end
+end
+
 ```
 

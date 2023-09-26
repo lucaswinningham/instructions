@@ -375,10 +375,48 @@ $ rspec
 ### GraphQL User Signup
 
 ```bash
+$ mkdir -p spec/graphql/graph_meta/{mixins,objects}/execution
+$ mkdir -p app/graphql/graph_meta/{mixins,objects}/execution
+$ mkdir -p spec/examples/graphql/graph_meta/mixins
+$ touch spec/examples/graphql/graph_meta/mixins/resolvable_example.rb
+$ touch spec/graphql/graph_meta/objects/execution/errors_spec.rb
+$ touch app/graphql/graph_meta/objects/execution/errors.rb
+$ touch spec/graphql/graph_meta/mixins/execution/resolvable_spec.rb
+$ touch app/graphql/graph_meta/mixins/execution/resolvable.rb
+$ touch spec/graphql/mutations/base_mutation_spec.rb
+$ touch app/graphql/mutations/base_mutation.rb
+$ mkdir spec/graphql/graph_meta/objects/password
+$ mkdir app/graphql/graph_meta/objects/password
+$ touch spec/graphql/graph_meta/objects/password/validator_spec.rb
+$ touch app/graphql/graph_meta/objects/password/validator.rb
+```
+
+###### backend/spec/examples/graphql/graph_meta/mixins/resolvable_example.rb
+
+###### backend/spec/graphql/graph_meta/objects/execution/errors_spec.rb
+
+###### backend/app/graphql/graph_meta/objects/execution/errors.rb
+
+###### backend/spec/graphql/graph_meta/mixins/execution/resolvable_spec.rb
+
+###### backend/app/graphql/graph_meta/mixins/execution/resolvable.rb
+
+###### backend/spec/graphql/mutations/base_mutation_spec.rb
+
+###### backend/app/graphql/mutations/base_mutation.rb
+
+###### backend/spec/graphql/graph_meta/objects/password/validator_spec.rb
+
+###### backend/app/graphql/graph_meta/objects/password/validator.rb
+
+```ruby
+
+```
+
+```bash
 $ mkdir app/graphql/types/auth/
 $ touch app/graphql/types/auth/user_auth_type.rb
-$ touch app/graphql/types/auth/user_token_type.rb
-$ touch app/graphql/mutations/base_mutation.rb
+$ touch app/graphql/types/auth/user_jwt_type.rb
 $ mkdir -p spec/graphql/mutations/users/
 $ touch spec/graphql/mutations/users/user_create_spec.rb
 $ mkdir spec/support/client_mocks
@@ -387,6 +425,7 @@ $ touch spec/graphql/mutations/users/user_password_change_spec.rb
 $ mkdir app/graphql/mutations/users/
 $ touch app/graphql/mutations/users/user_create.rb
 $ touch app/graphql/mutations/users/user_password_change.rb
+$ touch spec/graphql/integration/users/user_signup_spec.rb
 ```
 
 ###### backend/app/graphql/types/auth/user_auth_type.rb
@@ -405,22 +444,16 @@ end
 
 ```
 
-###### backend/app/graphql/types/auth/user_token_type.rb
+###### backend/app/graphql/types/auth/user_jwt_type.rb
 
 ```ruby
 module Types
   module Auth
-    class UserTokenType < BaseObject
-      field :token, String, null: false
+    class UserJwtType < BaseObject
+      field :jwt, String, null: false
     end
   end
 end
-
-```
-
-###### backend/app/graphql/mutations/base_mutation.rb
-
-```ruby
 
 ```
 
